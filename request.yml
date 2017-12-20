@@ -1,0 +1,15 @@
+#Sample request data in yaml form
+
+base_url: http://hostname:port/path
+
+- basePath: /
+  headers:
+    {headers}
+  method: get
+  paths: /{pathvalue}
+  query:
+    {queries}
+  body:
+    {body in case of POST request}
+  definition: {Swagger Definition for response code 200 for this API}
+  status: 200
