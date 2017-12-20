@@ -12,11 +12,11 @@ var swaggerObject = require(swggaerFile);
 
 var arrKeys = [];
 
-var propertyArr = [];
+var propertyArrSwagger = [];
 
-var propertyResponseArr = [];
+var propertyResponseAPIArr = [];
 
-var arrKeysResponse = [];
+var arrKeysResponseAPI = [];
 
 /** Swagger tools utility to compose the model on the basis of definitions
  *  It also extracts all the properties in response structure from a swagger json file
@@ -35,12 +35,12 @@ var apiModel = function(definitionValue){
                     if(properties[property]!= undefined)
                     if (properties[property].hasOwnProperty("properties")) {
                         arrKeys.push(property);
-                        propertyArr.push(Object.keys(properties[property].properties));
+                        propertyArrSwagger.push(Object.keys(properties[property].properties));
                         count = 0;
                         if(properties[property]== undefined){
                             arrKeys.push(property);
                             properties = properties[property].items.properties;
-                            propertyArr.push(Object.keys(properties));
+                            propertyArrSwagger.push(Object.keys(properties));
                             if(properties!= undefined){
                                 count = 1;
                             }
@@ -55,7 +55,7 @@ var apiModel = function(definitionValue){
                     else if (properties[property].type === 'array') {
                         arrKeys.push(property);
                         properties = properties[property].items.properties;
-                        propertyArr.push(Object.keys(properties));
+                        propertyArrSwagger.push(Object.keys(properties));
                         if(properties!= undefined){
                             count = 1;
                         }
@@ -64,7 +64,7 @@ var apiModel = function(definitionValue){
                         }
                     }
                     else {
-                        if(!(propertyArr.toString().indexOf(property.toString()) > -1)) {
+                        if(!(propertyArrSwagger.toString().indexOf(property.toString()) > -1)) {
                             arrKeys.push(property);
                         }
                         length = length - 1;
@@ -118,30 +118,30 @@ YAML.load(apiFile + '.yml', function (resultdev) {
                     for (var keyValue in data) {
                         if (typeof data[keyValue] != 'string' && data[keyValue]!=null) {
                             if((Object.keys(data[keyValue]).toString().charAt(0)) === '0'){
-                                propertyResponseArr.push((Object.keys(data[keyValue][0]).toString()));
+                                propertyResponseAPIArr.push((Object.keys(data[keyValue][0]).toString()));
                             }
                             else{
-                                propertyResponseArr.push((Object.keys(data[keyValue]).toString()));
+                                propertyResponseAPIArr.push((Object.keys(data[keyValue]).toString()));
                             }
                         }
                     }
-                    arrKeysResponse.push(keys.toString());
-                    if(propertyArr!="" || propertyResponseArr!="" ) {
-                        propertyArr = propertyArr.join();
-                        propertyResponseArr = propertyResponseArr[0].split(',');
-                        var isSuperset = propertyResponseArr.every(function (val) {
-                            return propertyArr.indexOf(val) >= 0;
+                    arrKeysResponseAPI.push(keys.toString());
+                    if(propertyArrSwagger!="" || propertyResponseAPIArr!="" ) {
+                        propertyArrSwagger = propertyArrSwagger.join();
+                        propertyResponseAPIArr = propertyResponseAPIArr[0].split(',');
+                        var isSuperset = propertyResponseAPIArr.every(function (val) {
+                            return propertyArrSwagger.indexOf(val) >= 0;
                         });
                         assert.equal(true,isSuperset);
                     }
-                    arrKeysResponse = arrKeysResponse[0].split(',');
-                    var isSuperset1 = arrKeysResponse.every(function(val) { return arrKeys.indexOf(val) >= 0; });
+                    arrKeysResponseAPI = arrKeysResponseAPI[0].split(',');
+                    var isSuperset1 = arrKeysResponseAPI.every(function(val) { return arrKeys.indexOf(val) >= 0; });
                     assert.equal(true,isSuperset1);
                     length = length - 1;
                     arrKeys = [];
-                    propertyArr = [];
-                    propertyResponseArr = [];
-                    arrKeysResponse = [];
+                    propertyArrSwagger = [];
+                    propertyResponseAPIArr = [];
+                    arrKeysResponseAPI = [];
                     loop();
             });
         }
