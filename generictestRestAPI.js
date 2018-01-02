@@ -1,14 +1,14 @@
 /** Generic Utility to test the Rest API */
 
-var rest = require("restler");
+var restler = require("restler");
 var assert = require('assert');
-var spec = require('swagger-tools').specs.v2;
-var YAML = require('yamljs');
+var swagger = require('swagger-tools').specs.v2;
+var YAMLJS = require('yamljs');
 
-var apiFile = process.argv[2];
-var swggaerFile = process.argv[3];
+var requestFile = process.argv[2];
+var swggaerDefinitionFile = process.argv[3];
 
-var swaggerObject = require(swggaerFile);
+var swaggerDefinitionObject = require(swggaerDefinitionFile);
 
 var arrKeys = [];
 
@@ -18,11 +18,11 @@ var propertyResponseAPIArr = [];
 
 var arrKeysResponseAPI = [];
 
-/** Swagger tools utility to compose the model on the basis of definitions
+/** Swagger tools utility to compose the model on the basis of swagger definitions
  *  It also extracts all the properties in response structure from a swagger json file
  *  */
-var apiModel = function(definitionValue){
-    spec.composeModel(swaggerObject, '#/definitions/'+definitionValue, function (err, schema) {
+var apiResponseModel = function(definitionValue){
+    swagger.composeModel(swaggerDefinitionObject, '#/definitions/'+definitionValue, function (err, schema) {
         if (err) {
             throw err;
         }
@@ -84,36 +84,36 @@ var apiModel = function(definitionValue){
  * Read the API file passed as command line argument
  * Read all the request file values and store the length of the no of requests
  */
-var length;
+var requestLength;
 
-YAML.load(apiFile + '.yml', function (resultdev) {
-    length = resultdev.length;
+YAMLJS.load(requestFile + '.yml', function (resultdev) {
+    requestLength = resultdev.length;
     base_url = resultdev.base_url;
     /**
      * Run the recursive loop for the length of requests
      * Verify the response structure of the API with the response structure of Swagger json file
      */
-    (function loop() {
-        if (length > 0) {
-            var apiData = resultdev[length - 1];
-            var basePath = apiData.basePath;
-            var path = apiData.paths;
-            var headers = apiData.headers;
-            var queryData = apiData.query;
-            var methodName = apiData.method;
-            var bodyData = apiData.body;
-            var definition = apiData.definition;
-            var statusCode = apiData.status;
+    (function recursiveLoop() {
+        if (requestLength > 0) {
+            var apiRequestData = resultdev[requestLength - 1];
+            var requestBasePath = apiRequestData.basePath;
+            var requestPath = apiRequestData.paths;
+            var requestHeaders = apiRequestData.headers;
+            var requestQueryData = apiRequestData.query;
+            var requestMethodName = apiRequestData.method;
+            var requestBodyData = apiRequestData.body;
+            var requestDefinition = apiRequestData.definition;
+            var requestStatusCode = apiRequestData.status;
 
             /** parse the swagger file to read the response structure */
-            apiModel(definition);
+            apiResponseModel(requestDefinition);
 
-            rest[methodName](base_url, {
-                headers: headers,
-                query: queryData,
-                data: JSON.stringify(bodyData)
+            restler[requestMethodName](base_url, {
+                headers: requestHeaders,
+                query: requestQueryData,
+                data: JSON.stringify(requestBodyData)
             }).on('complete', function (data, response) {
-                    assert.equal(statusCode, response.statusCode);
+                    assert.equal(requestStatusCode, response.statusCode);
                     var keys = Object.keys(data);
                     for (var keyValue in data) {
                         if (typeof data[keyValue] != 'string' && data[keyValue]!=null) {
@@ -137,12 +137,12 @@ YAML.load(apiFile + '.yml', function (resultdev) {
                     arrKeysResponseAPI = arrKeysResponseAPI[0].split(',');
                     var isSuperset1 = arrKeysResponseAPI.every(function(val) { return arrKeys.indexOf(val) >= 0; });
                     assert.equal(true,isSuperset1);
-                    length = length - 1;
+                    requestLength = requestLength - 1;
                     arrKeys = [];
                     propertyArrSwagger = [];
                     propertyResponseAPIArr = [];
                     arrKeysResponseAPI = [];
-                    loop();
+                    recursiveLoop();
             });
         }
     }());
